@@ -1,67 +1,88 @@
 # Day 17 Submission - Phiên bản A
 **Student:** Quách Gia Được (MSSV: 2A202600423)
 **Date:** 24/04/2026
-**Product idea:** Hệ thống AI phân tích tương quan văn bản giữa CV và mô tả công việc (JD) để chỉ ra lỗ hổng kỹ năng thực chiến và đề xuất khóa học bù đắp cho sinh viên IT.
+**Product idea:** Hệ thống AI phân tích văn bản CV và mô tả công việc (JD) để chỉ ra các lỗ hổng kỹ năng thực chiến và đề xuất khóa học tương ứng cho sinh viên IT.
 
 ## 1. MVP Boundary Sheet
 **Riskiest Assumption:**
-> [cite_start]Sinh viên IT sẽ thực sự tin tưởng và dành thời gian học các kỹ năng được AI gợi ý, thay vì bỏ qua và tiếp tục rải CV mù quáng[cite: 809, 896].
+> Sinh viên IT sẽ thực sự tin tưởng và dành thời gian học theo các kỹ năng mà AI chỉ ra thay vì tiếp tục rải CV mù quáng.
 
-[cite_start]**In-Scope** (tối đa 3)[cite: 813]:
+**In-Scope** (tối đa 3):
 - [x] Tính năng tải lên file CV (PDF) và ô dán nội dung văn bản JD.
-- [x] Module LLM đối chiếu từ khóa và ngữ nghĩa (Semantic matching) giữa CV và JD để trích xuất báo cáo "Skill-gap".
-- [x] Tính năng hiển thị danh sách kỹ năng IT còn thiếu kèm text gợi ý tên khóa học.
+  *Test giả định:* Sinh viên sẵn sàng cung cấp dữ liệu cá nhân và thông tin công việc để được phân tích.
+- [x] Module LLM đối chiếu từ khóa và ngữ nghĩa giữa CV và JD để trích xuất báo cáo "Skill-gap".
+  *Test giả định:* LLM có thể phát hiện chính xác các từ khóa kỹ năng IT bị thiếu dựa trên văn bản.
+- [x] Hiển thị danh sách kỹ năng còn thiếu kèm tên các đầu mục kiến thức/khóa học cần bổ sung.
+  *Test giả định:* Người dùng quan tâm đến việc nhận được chỉ dẫn cụ thể để cải thiện hồ sơ.
 
 **Out-of-Scope:**
-- Tính năng AI tự động sửa hoặc viết lại nội dung file CV cho người dùng. (Lý do: Không tập trung vào lõi giải quyết skill-gap) [cite_start][cite: 813].
-- Tích hợp link mua khóa học trực tiếp (Affiliate). (Lý do: MVP chỉ cần test nhu cầu học, chưa cần test khả năng thanh toán ngay).
+- Tính năng AI tự động sửa hoặc viết lại nội dung CV.
+  *Lý do bỏ:* Làm mất đi trọng tâm là chỉ ra lỗ hổng để học bù, biến sản phẩm thành một công cụ xào nấu văn bản.
+- Tích hợp link mua khóa học trực tiếp (Affiliate).
+  *Lý do bỏ:* Quá phức tạp cho MVP, ưu tiên kiểm chứng việc người dùng có muốn học hay không trước.
 
 **Non-Goals:**
-- [cite_start]KHÔNG làm công cụ thiết kế đồ họa template CV (CV Builder)[cite: 813].
-- KHÔNG làm sàn giao dịch tuyển dụng (Job Board).
+- Không làm công cụ thiết kế đồ họa hay cung cấp template CV (CV Builder).
+- Không làm sàn giao dịch tuyển dụng cho doanh nghiệp (Job Board).
 
 ## 2. PRD Skeleton
 ### Problem Statement
-> Sinh viên IT (Web, Mobile, System...) thường rải CV hàng loạt nhưng bị loại ngay vòng lọc hồ sơ do thiếu kỹ năng thực chiến sát với JD. [cite_start]Họ không nhận được phản hồi từ HR nên không biết mình hổng ở đâu, gây lãng phí thời gian và thất nghiệp kéo dài[cite: 832, 833, 834].
+> Sinh viên IT (Web, Mobile, System...) thường rải CV hàng loạt nhưng bị loại ngay từ vòng lọc hồ sơ vì không biết cách đối chiếu năng lực bản thân với yêu cầu thực tế của JD, gây lãng phí thời gian và thất nghiệp kéo dài.
 
 ### Target User
-> [cite_start]Sinh viên IT năm cuối và Fresher (dưới 1 năm kinh nghiệm) đang trong quá trình tìm việc nhưng tỷ lệ pass CV thấp[cite: 835, 836].
+> Sinh viên IT năm cuối và Fresher đang trong quá trình tìm việc nhưng tỷ lệ phản hồi hồ sơ thấp.
 
 ### User Stories
 **Story 1:**
-> [cite_start]As a Sinh viên IT đang tìm việc, I want đối chiếu nhanh CV của tôi với một JD cụ thể, so that tôi biết mình đang thiếu những từ khóa kỹ thuật hay công cụ nào[cite: 839, 840].
+> As a Sinh viên IT đang tìm việc, I want đối chiếu nhanh CV của tôi với một JD cụ thể, so that tôi biết mình đang thiếu những từ khóa kỹ thuật hay kỹ năng thực chiến nào.
+
 **Story 2:**
-> As a người dùng đang bị hổng kỹ năng, I want nhận được gợi ý các khóa học ngắn hạn, so that tôi có thể tập trung học bù đúng trọng tâm.
+> As a người dùng đang bị hổng kỹ năng, I want nhận được gợi ý các kỹ năng cần học bù, so that tôi có thể tập trung nâng cấp Portfolio đúng trọng tâm.
 
 ### Al-Specific
 **Model Selection:**
-- [cite_start]Model: GPT-4o-mini[cite: 855].
-- [cite_start]Lý do chọn: Xử lý văn bản nhanh, chi phí rẻ, đủ sức mạnh phân tích ngữ nghĩa các thuật ngữ IT (ví dụ hiểu "React" liên quan đến "Frontend")[cite: 858, 859].
-- Trade-offs chấp nhận: Có thể bỏ sót các công nghệ quá ngách hoặc từ viết tắt lạ.
+- Model: GPT-4o-mini
+- Lý do chọn: Xử lý văn bản nhanh, chi phí rẻ, đủ mạnh để hiểu sự tương đồng ngữ nghĩa giữa các thuật ngữ IT (ví dụ hiểu ReactJS thuộc Frontend).
+- Trade-offs chấp nhận: Đôi khi có thể bỏ sót các công nghệ quá ngách hoặc tên framework viết tắt lạ.
+- Trade-offs không chấp nhận: Tự bịa (hallucinate) ra các kỹ năng ảo không có thật.
 
 **Data Requirements:**
-- [cite_start]Nguồn: File PDF CV và văn bản JD do user chủ động nhập vào[cite: 861, 862].
-- Update frequency: Tức thời theo từng session sử dụng.
+- Nguồn: File PDF CV và văn bản JD do user nhập vào.
+- Owner: User sở hữu dữ liệu cá nhân.
+- Update frequency: Tức thời theo yêu cầu.
 
 **Fallback UX:**
-- [cite_start]Chiến lược: Expectation Management (Quản trị kỳ vọng)[cite: 871, 872].
-- Trigger: Khi AI không thể đọc được văn bản từ file PDF do lỗi font.
-- Hành động: Báo lỗi "Hệ thống không thể trích xuất văn bản từ file này".
-- User options: Hướng dẫn người dùng copy-paste text CV thủ công vào ô nhập liệu để thử lại.
+- Chiến lược: Expectation Management (Quản trị kỳ vọng).
+- Trigger: Khi AI không thể trích xuất văn bản từ file PDF do lỗi font hoặc file ảnh.
+- Hành động: Hiển thị thông báo "Hệ thống không thể đọc được định dạng file này".
+- User options: Yêu cầu người dùng copy-paste text CV trực tiếp vào ô nhập liệu để thử lại.
 
 ### Success Metrics
-- [cite_start]Primary metric: Tỷ lệ người dùng bấm vào xem chi tiết các kỹ năng được gợi ý[cite: 846, 848].
-- Ngưỡng thành công: > 20% user thực hiện trong session đầu tiên.
+- Primary metric: Tỷ lệ người dùng bấm vào xem danh sách kỹ năng gợi ý.
+- Ngưỡng thành công: > 20% user thực hiện.
+- Timeframe đo lường: 7 ngày đầu.
+
+### Dependencies & Constraints
+- Phụ thuộc vào chất lượng trích xuất văn bản từ các thư viện đọc PDF mã nguồn mở.
 
 ## 3. Hypothesis Table
-### Hypothesis 1 
-> "Chúng tôi tin rằng [Báo cáo Skill-gap] sẽ giúp [Sinh viên IT] đạt được [việc xác định đúng kỹ năng thực chiến cần học]. 
-> [cite_start]Chúng tôi sẽ biết mình đúng khi thấy [Tỷ lệ click xem chi tiết lộ trình học] đạt [>20%] trong [14 ngày]." [cite: 891, 892, 893, 894]
+### Hypothesis 1 (cho tính năng In-Scope #2)
+> "Chúng tôi tin rằng [Module LLM đối chiếu từ khóa] sẽ giúp [Sinh viên IT] đạt được [việc xác định đúng kỹ năng thực chiến cần học].
+> Chúng tôi sẽ biết mình đúng khi thấy [Tỷ lệ user click xem chi tiết kỹ năng hổng] đạt [>20%] trong [14 ngày]."
+
+Riskiest assumption: Kết quả AI chỉ ra đủ chính xác và có ý nghĩa đối với sinh viên.
+Cách test cheapest: Dùng Wizard of Oz, cho sinh viên nộp CV và JD, team tự chấm bằng mắt và trả kết quả để xem phản ứng.
 
 ## 4. PMF Scorecard
 **Aha Moment:**
-> [cite_start]Khoảnh khắc sinh viên nhận ra CV của họ bị loại vì thiếu các công nghệ "ngoại vi" bắt buộc trong JD (như Docker, Unit Test) mà trường đại học không dạy[cite: 930, 931].
+> Khoảnh khắc sinh viên nhận ra CV của họ trượt vì thiếu các kỹ năng "ngoại vi" bắt buộc trong JD (như Docker, Unit Test) mà họ chưa từng để ý.
+
 **Actionable Metric:**
-> [cite_start]Tỷ lệ người dùng bấm nút "Lưu lộ trình vá kỹ năng"[cite: 940, 941].
+> Tỷ lệ người dùng thực hiện hành động "Lưu lộ trình vá kỹ năng".
+
 **PMF Method:**
-> [cite_start]Sean Ellis Test (>40% trả lời "Rất thất vọng" nếu không còn sản phẩm)[cite: 904, 912].
+> Sean Ellis Test
+> Ngưỡng thành công: >40% trả lời "Very disappointed" (Rất thất vọng nếu không còn sản phẩm).
+
+**Vanity Metrics tôi sẽ không dùng:**
+- Số lượng lượt truy cập vào trang web; Tổng số CV được tải lên nền tảng.
